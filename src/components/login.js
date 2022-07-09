@@ -2,6 +2,10 @@ import React, { Component, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ValidatorForm, TextValidator } from "react-material-ui-form-validator";
 import Loader from "./loader";
+import CryptoJS from 'crypto-js';
+import { postFetch } from "../http";
+import Cookies from 'js-cookie';
+import Config from './../config';
 
 function Login() {
   const history = useNavigate();
@@ -18,6 +22,7 @@ function Login() {
     message: "success",
     validationMessage: "Success",
   });
+
   const emailFormat = /^[^\s@]+@[^\s@]+[^\s@]+$/;
 
   const handleChange = (event) => {
@@ -26,16 +31,61 @@ function Login() {
     setState({ ...state, formData });
   };
   const handleSubmit = async () => {
-    console.log("hello");
-    setTimeout(() => {
-      setLoader({
-        ...loader,
-        loader: false,
-        notification: true,
-        message: "success",
-        validationMessage: "Success",
-      });
-    }, 1000);
+   
+    let key1 = CryptoJS.enc.Utf8.parse('49346A3CD8BFD3F9100B4CE9DAED72B1');
+    let iv = CryptoJS.enc.Utf8.parse('9836565498764147');
+    let encrypted = CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(state.formData.password), key1, {
+      keySize: 128 / 8,
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+    });
+   
+    const request = {
+      "username" : state.formData.email,
+      "password" : encrypted.toString()
+    }
+
+    await postFetch("/authenticate", request).then((data) =>{
+      if(data.token){
+        console.log("hello there");
+        Cookies.set("state", CryptoJS.AES.encrypt(JSON.stringify(data), Config.secretPhrase));
+        history('/appManager',data)
+        //history.push("/appManager", data);
+      }else{
+        setTimeout(() => {
+          setLoader({...loader, loader:false, notification:true,message:"error",validationMessage:data.message});
+        },1000);
+      }
+
+    }).catch((e)=>{
+      setTimeout(() => {
+        setLoader({...loader, loader:false, notification:true,message:"error",validationMessage:"System Error: Please contact help."});
+      },1000);
+    });
+
+    try{
+      await localStorage.setItem('user-name', state.formData.email);
+    } catch(error){
+      setTimeout(() => {
+        setLoader({
+          ...loader,
+          loader: false,
+          notification: true,
+          message: "error",
+          validationMessage: "unable to set local storage",
+        });
+      }, 1000);
+    };
+    //setTimeout(() => {
+      //setLoader({
+       // ...loader,
+       // loader: false,
+       // notification: true,
+      //  message: "success",
+      //  validationMessage: "Success",
+     // });
+    //}, 1000);
   };
 
   const loaderAction = async () => {
@@ -77,6 +127,7 @@ function Login() {
           margin="normal"
           size="small"
           id="password"
+          type="password"
           name="password"
           autoComplete="current-password"
           className="form-control"
