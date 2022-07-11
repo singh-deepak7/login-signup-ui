@@ -1,11 +1,35 @@
-import React from 'react'
-import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
-import './App.css'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import Login from './components/login'
-import SignUp from './components/signup.component'
-import AppManager from './components/appManager'
+import React from 'react';
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import './App.css';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import {useIdleTimer} from 'react-idle-timer';
+import Cookies from 'js-cookie';
+import Login from './components/login';
+import SignUp from './components/signup.component';
+import AppManager from './components/appManager';
+import Logout from './components/Logout';
+
 function App() {
+ 
+  //const navigate = useNavigate();
+
+  const handleOnIdle = event => {
+    console.log("- idle --");
+    console.log('user is idle', event);
+    console.log('last active', getLastActiveTime());
+    Cookies.remove('state');
+    localStorage.clear();
+    //navigate('/logout');
+    window.location.href = "/logout";
+  }
+
+  const {getLastActiveTime} = useIdleTimer({
+    timeout: 100 * 60 * 15,
+    onIdle: handleOnIdle,
+    debounce: 500
+  });
+
   return (
     <Router>
       <div className="App">
@@ -37,6 +61,7 @@ function App() {
               <Route path="/sign-in" element={<Login />} />
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/appManager" element={<AppManager />} />
+              <Route path="/logout" element={<Logout />} />
             </Routes>
           </div>
         </div>
