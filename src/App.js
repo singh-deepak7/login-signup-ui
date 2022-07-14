@@ -9,6 +9,7 @@ import Login from './components/login';
 import SignUp from './components/signup.component';
 import AppManager from './components/appManager';
 import Logout from './components/Logout';
+import Search from './components/search';
 
 function App() {
  
@@ -25,7 +26,7 @@ function App() {
   }
 
   const {getLastActiveTime} = useIdleTimer({
-    timeout: 100 * 60 * 15,
+    timeout: 1000 * 60 * 15,
     onIdle: handleOnIdle,
     debounce: 500
   });
@@ -62,6 +63,7 @@ function App() {
               <Route path="/sign-up" element={<SignUp />} />
               <Route path="/appManager" element={<AppManager />} />
               <Route path="/logout" element={<Logout />} />
+              <Route path="/search" element={<Search />} />
             </Routes>
           </div>
         </div>

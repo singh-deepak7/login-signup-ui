@@ -50,7 +50,7 @@ function Login() {
       if(data.token){
         console.log("hello there");
         Cookies.set("state", CryptoJS.AES.encrypt(JSON.stringify(data), Config.secretPhrase));
-        history('/appManager',data)
+        history('/search',data)
         //history.push("/appManager", data);
       }else{
         setTimeout(() => {
